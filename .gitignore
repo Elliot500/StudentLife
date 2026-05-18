@@ -15,7 +15,4 @@ config/database.php
 *.tmp
 *.bak
 
-# Modèles 3D (trop lourds pour GitHub)
-public/models/*.glb
-public/models/*.gltf
-1_euro_coin.glb
+
