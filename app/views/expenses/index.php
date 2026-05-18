@@ -25,6 +25,13 @@ $balance        = $totalIncome - $totalExpenses;
 <div class="page-header">
   <div>
     <div class="page-title">Dépenses & Revenus</div>
+    </div>
+  <button onclick="window.print()" class="pbtn" style="gap:8px;">
+    🖨️ Exporter PDF
+  </button>
+</div>
+<div class="page-header" style="margin-bottom:8px;">
+  <div>
     <div class="page-sub">
       Revenus : <strong style="color:#34d399;"><?= number_format($totalIncome, 2, ',', ' ') ?> €</strong>
       &nbsp;·&nbsp;
@@ -104,6 +111,10 @@ $balance        = $totalIncome - $totalExpenses;
           <label>Date</label>
           <input type="date" name="date" value="<?= date('Y-m-d') ?>">
         </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;margin-top:14px;">
+        <input type="checkbox" name="is_recurring" id="is_recurring" value="1" style="width:16px;height:16px;accent-color:#6366f1;">
+        <label for="is_recurring" style="font-size:13px;color:#8b8fb0;cursor:pointer;">🔁 Dépense récurrente (abonnement mensuel)</label>
       </div>
       <div class="form-actions">
         <button type="submit" class="pbtn pbtn-primary">
@@ -185,7 +196,12 @@ $balance        = $totalIncome - $totalExpenses;
           <?php foreach ($expenses as $exp): ?>
           <tr>
             <td style="color:#8b8fb0;white-space:nowrap;"><?= date('d/m/Y', strtotime($exp['date'])) ?></td>
-            <td><?= htmlspecialchars($exp['description'] ?? '—') ?></td>
+            <td>
+              <?= htmlspecialchars($exp['description'] ?? '—') ?>
+              <?php if (!empty($exp['is_recurring'])): ?>
+                <span title="Récurrent" style="font-size:11px;margin-left:4px;">🔁</span>
+              <?php endif; ?>
+            </td>
             <td><span class="cat-badge <?= $exp['category'] ?>"><?= $catLabels[$exp['category']] ?? $exp['category'] ?></span></td>
             <td style="text-align:right;font-weight:700;font-feature-settings:'tnum';"><?= number_format($exp['amount'], 2, ',', ' ') ?> €</td>
             <td style="text-align:right;">

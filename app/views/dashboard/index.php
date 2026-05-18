@@ -125,6 +125,118 @@ $firstName = explode(' ', $user['name'])[0];
   </div>
 </div>
 
+<!-- ── Score + Prévisionnel ── -->
+<div style="display:grid;grid-template-columns:220px 1fr;gap:18px;margin-bottom:22px;">
+
+  <!-- Score mensuel -->
+  <div class="glass" style="padding:24px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;">
+    <?php
+      $scoreColor = $score >= 70 ? '#34d399' : ($score >= 40 ? '#f59e0b' : '#ef4444');
+      $scoreLabel = $score >= 70 ? '🏆 Excellent' : ($score >= 40 ? '⚡ Correct' : '⚠️ Attention');
+      $dash = round($score * 2.51); // 251 = circonférence 2π×40
+    ?>
+    <div class="eyebrow">Score du mois</div>
+    <svg width="90" height="90" viewBox="0 0 90 90">
+      <circle cx="45" cy="45" r="40" fill="none" stroke="rgba(255,255,255,.06)" stroke-width="8"/>
+      <circle cx="45" cy="45" r="40" fill="none" stroke="<?= $scoreColor ?>" stroke-width="8"
+        stroke-dasharray="<?= $dash ?> 251" stroke-dashoffset="62.75" stroke-linecap="round"
+        style="filter:drop-shadow(0 0 6px <?= $scoreColor ?>88);"/>
+      <text x="45" y="50" text-anchor="middle" font-size="20" font-weight="900" fill="<?= $scoreColor ?>"><?= $score ?></text>
+    </svg>
+    <span style="font-size:12px;font-weight:600;color:<?= $scoreColor ?>;"><?= $scoreLabel ?></span>
+  </div>
+
+  <!-- Prévisionnel -->
+  <div class="glass" style="padding:24px;">
+    <div class="eyebrow">Prévisionnel</div>
+    <h3 style="font-size:15px;font-weight:700;color:#f5f7ff;margin:0 0 16px;">À la fin du mois...</h3>
+    <?php
+      $projColor = $projected <= $income ? '#34d399' : '#ef4444';
+      $projLabel = $projected <= $income ? '✓ Tu restera dans ton budget' : '⚠️ Tu dépasseras ton budget';
+    ?>
+    <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:10px;">
+      <span style="font-size:36px;font-weight:900;color:<?= $projColor ?>;"><?= number_format($projected, 0, ',', ' ') ?> €</span>
+      <span style="color:#8b8fb0;font-size:13px;">de dépenses projetées</span>
+    </div>
+    <div style="font-size:13px;color:<?= $projColor ?>;margin-bottom:14px;"><?= $projLabel ?></div>
+    <div style="background:rgba(255,255,255,.06);border-radius:99px;height:8px;overflow:hidden;">
+      <div style="height:100%;border-radius:99px;width:<?= min(100, round($projected / max(1,$income) * 100)) ?>%;background:<?= $projColor ?>;"></div>
+    </div>
+    <div style="display:flex;justify-content:space-between;margin-top:6px;font-size:11px;color:#6b6f8e;">
+      <span>0 €</span><span>Budget : <?= number_format($income, 0, ',', ' ') ?> €</span>
+    </div>
+  </div>
+</div>
+
+<!-- ── Alertes budget ── -->
+<?php if (!empty($budgetAlerts ?? [])): ?>
+<div style="display:flex;flex-direction:column;gap:10px;margin-bottom:22px;">
+  <?php foreach ($budgetAlerts as $alert): ?>
+  <div class="alert-blob" style="background:linear-gradient(135deg,rgba(<?= $alert['pct'] >= 100 ? '244,63,94' : '245,158,11' ?>,.15),rgba(<?= $alert['pct'] >= 100 ? '225,29,72' : '249,115,22' ?>,.08));border-color:rgba(<?= $alert['pct'] >= 100 ? '244,63,94' : '245,158,11' ?>,.25);">
+    <div class="a-ico" style="background:linear-gradient(135deg,<?= $alert['pct'] >= 100 ? '#ef4444,#dc2626' : '#f59e0b,#d97706' ?>);"><?= $alert['pct'] >= 100 ? '🔴' : '🟡' ?></div>
+    <div style="flex:1;">
+      <strong style="color:<?= $alert['pct'] >= 100 ? '#fca5a5' : '#fde68a' ?>;">
+        <?= htmlspecialchars(ucfirst($alert['category'])) ?> — <?= $alert['pct'] ?>% du budget utilisé
+      </strong>
+      <small style="color:<?= $alert['pct'] >= 100 ? '#f87171' : '#fbbf24' ?>;">
+        <?= number_format($alert['spent'], 2, ',', ' ') ?> € sur <?= number_format($alert['limit'], 2, ',', ' ') ?> € alloués
+      </small>
+    </div>
+  </div>
+  <?php endforeach; ?>
+</div>
+<?php endif; ?>
+
+<!-- ── Objectifs d'épargne ── -->
+<?php if (!empty($goals ?? [])): ?>
+<div class="glass" style="padding:24px;margin-bottom:22px;">
+  <div class="card-head">
+    <div><div class="eyebrow">Épargne</div><h3>Objectifs en cours</h3></div>
+    <a href="<?= BASE_URL ?>/savings" class="pbtn pbtn-sm">Tout voir <?= icon('arr-r', 11) ?></a>
+  </div>
+  <?php $savingsModel = new SavingsGoalModel(); ?>
+  <?php foreach ($goals as $goal): $pct = $savingsModel->progressPct($goal); ?>
+  <div style="margin-bottom:14px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+      <span style="font-size:13px;font-weight:600;color:#f5f7ff;"><?= htmlspecialchars($goal['emoji']) ?> <?= htmlspecialchars($goal['name']) ?></span>
+      <span style="font-size:12px;color:#8b8fb0;"><?= number_format($goal['current_amount'], 0, ',', ' ') ?> / <?= number_format($goal['target_amount'], 0, ',', ' ') ?> €</span>
+    </div>
+    <div style="background:rgba(255,255,255,.06);border-radius:99px;height:7px;overflow:hidden;">
+      <div style="height:100%;border-radius:99px;width:<?= $pct ?>%;background:linear-gradient(90deg,#6366f1,#22d3ee);"></div>
+    </div>
+  </div>
+  <?php endforeach; ?>
+</div>
+<?php endif; ?>
+
+<!-- ── Graphe 6 mois ── -->
+<?php if (!empty($history ?? [])): ?>
+<div class="glass" style="padding:24px;margin-bottom:22px;">
+  <div class="card-head">
+    <div><div class="eyebrow">Historique</div><h3>Dépenses sur 6 mois</h3></div>
+  </div>
+  <?php
+    $maxVal = max(array_column($history, 'total'));
+    $monthsFrCourt = ['','jan','fév','mar','avr','mai','jun','jul','aoû','sep','oct','nov','déc'];
+  ?>
+  <div style="display:flex;align-items:flex-end;gap:10px;height:100px;padding-top:10px;">
+    <?php foreach ($history as $h):
+      $barH = $maxVal > 0 ? round($h['total'] / $maxVal * 90) : 0;
+      $isCurrentMonth = date('Y-m') === $h['month'];
+      [$y, $m] = explode('-', $h['month']);
+    ?>
+    <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;">
+      <span style="font-size:10px;color:#8b8fb0;"><?= number_format($h['total'], 0, ',', ' ') ?></span>
+      <div style="width:100%;height:<?= $barH ?>px;border-radius:6px 6px 0 0;
+        background:<?= $isCurrentMonth ? 'linear-gradient(180deg,#6366f1,#22d3ee)' : 'rgba(99,102,241,.3)' ?>;
+        min-height:4px;transition:height .4s;"></div>
+      <span style="font-size:10px;font-weight:600;color:<?= $isCurrentMonth ? '#a5b4fc' : '#6b6f8e' ?>;"><?= $monthsFrCourt[(int)$m] ?></span>
+    </div>
+    <?php endforeach; ?>
+  </div>
+</div>
+<?php endif; ?>
+
 <!-- Alerte frigo -->
 <?php if ($fridgeAlerts > 0): ?>
 <div class="alert-blob">

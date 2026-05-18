@@ -45,12 +45,15 @@ class ExpensesController extends Controller
                 $date        = $this->post('date', date('Y-m-d'));
 
                 if ($amount > 0) {
+                    $isRecurring = isset($_POST['is_recurring']) ? 1 : 0;
                     $this->expenses->create([
-                        'user_id'     => $uid,
-                        'amount'      => $amount,
-                        'category'    => $category,
-                        'description' => $description,
-                        'date'        => $date,
+                        'user_id'      => $uid,
+                        'amount'       => $amount,
+                        'category'     => $category,
+                        'description'  => $description,
+                        'date'         => $date,
+                        'is_recurring' => $isRecurring,
+                        'recurrence_day' => $isRecurring ? (int) date('j', strtotime($date)) : null,
                     ]);
                     $this->setFlash('success', 'Dépense ajoutée avec succès.');
                 } else {

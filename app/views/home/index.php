@@ -30,6 +30,127 @@
     @keyframes ringPulse { 0%,100%{transform:scale(1);opacity:.5} 50%{transform:scale(1.07);opacity:.85} }
     @keyframes spin      { to{transform:rotate(360deg)} }
 
+    /* ── Page Loader ─────────────────────────────────── */
+    #page-loader {
+      position: fixed; inset: 0; z-index: 99999;
+      background: #0a0a18;
+      display: flex;
+      align-items: center; justify-content: center;
+      transition: opacity .8s ease, visibility .8s ease;
+    }
+    #page-loader.out { opacity: 0; visibility: hidden; pointer-events: none; }
+
+    /* ── 4-cube assembly loader ──────────────────────── */
+    .loader {
+      position: relative;
+      width: 64px; height: 64px;
+    }
+
+    /* Chaque .lc = wrapper de translation 2D */
+    .lc {
+      position: absolute;
+      width: 32px; height: 32px;
+    }
+    /* Positions finales (cube 2x2 assemblé) */
+    .lc0 { top:  0;   left:  0;   animation: lc0-anim 4s ease-in-out infinite; }
+    .lc1 { top:  0;   left: 32px; animation: lc1-anim 4s ease-in-out infinite; }
+    .lc2 { top: 32px; left:  0;   animation: lc2-anim 4s ease-in-out infinite; }
+    .lc3 { top: 32px; left: 32px; animation: lc3-anim 4s ease-in-out infinite; }
+
+    /* .lc div = le cube 3D */
+    .lc div {
+      position: relative;
+      width: 32px; height: 32px;
+      background: #6366f1;
+      transform-style: preserve-3d;
+      animation: lc-rotate 4s ease-in-out infinite;
+    }
+    /* Face du dessus */
+    .lc div::before {
+      content: '';
+      position: absolute;
+      width: 32px; height: 32px;
+      top: 0; left: 0;
+      background: #818cf8;
+      transform-origin: 50% 0;
+      transform: rotateX(-90deg);
+    }
+    /* Face latérale droite */
+    .lc div::after {
+      content: '';
+      position: absolute;
+      width: 32px; height: 32px;
+      top: 0; left: 32px;
+      background: #312e81;
+      transform-origin: 0 50%;
+      transform: rotateY(90deg);
+    }
+
+    /* Ombre au sol */
+    .loader-shadow {
+      position: absolute;
+      width: 100px; height: 24px;
+      bottom: -20px; left: 50%;
+      transform: translateX(-50%);
+      background: radial-gradient(ellipse, rgba(99,102,241,.55), transparent 70%);
+      border-radius: 50%;
+      animation: shadow-anim 4s ease-in-out infinite;
+    }
+
+    /* ── Keyframes ────────────────────────────────────── */
+
+    /* Rotation isométrique constante pour tous les cubes */
+    @keyframes lc-rotate {
+      0%, 100% { transform: rotateY(-47deg) rotateX(-15deg) rotateZ(15deg); }
+    }
+
+    /* lc0 (haut-gauche) : arrive depuis haut-gauche */
+    @keyframes lc0-anim {
+      0%, 5%    { transform: translate(-90px, -60px); opacity: 0; }
+      8%        { opacity: 1; }
+      35%       { transform: translate(0, 0); }
+      58%       { transform: translate(0, 0); }
+      78%       { transform: translate(0, 130px); opacity: 0; }
+      100%      { transform: translate(0, 130px); opacity: 0; }
+    }
+    /* lc1 (haut-droite) : arrive depuis haut-droite */
+    @keyframes lc1-anim {
+      0%, 10%   { transform: translate(90px, -60px); opacity: 0; }
+      13%       { opacity: 1; }
+      38%       { transform: translate(0, 0); }
+      58%       { transform: translate(0, 0); }
+      80%       { transform: translate(0, 130px); opacity: 0; }
+      100%      { transform: translate(0, 130px); opacity: 0; }
+    }
+    /* lc2 (bas-gauche) : arrive depuis bas-gauche */
+    @keyframes lc2-anim {
+      0%, 15%   { transform: translate(-90px, 60px); opacity: 0; }
+      18%       { opacity: 1; }
+      40%       { transform: translate(0, 0); }
+      58%       { transform: translate(0, 0); }
+      76%       { transform: translate(0, 130px); opacity: 0; }
+      100%      { transform: translate(0, 130px); opacity: 0; }
+    }
+    /* lc3 (bas-droite) : arrive en dernier, puis sort par le bas */
+    @keyframes lc3-anim {
+      0%, 20%   { transform: translate(90px, 60px); opacity: 0; }
+      23%       { opacity: 1; }
+      43%       { transform: translate(0, 0); }    /* arrive */
+      56%       { transform: translate(0, 0); }    /* pause */
+      66%       { transform: translate(0, 70px); opacity: 1; } /* glisse vers le bas */
+      71%       { transform: translate(0, 70px); opacity: 0; } /* disparait */
+      100%      { transform: translate(0, 70px); opacity: 0; }
+    }
+
+    /* Ombre qui apparait quand le cube est assemblé */
+    @keyframes shadow-anim {
+      0%, 40%   { opacity: 0; transform: translateX(-50%) scaleX(0); }
+      50%, 55%  { opacity: 1; transform: translateX(-50%) scaleX(1); }
+      68%, 100% { opacity: 0; transform: translateX(-50%) scaleX(0); }
+    }
+
+    /* ── Cube 3D Loader ───────────────────────────────── */
+
     /* ── Scroll reveal ────────────────────────────────── */
     [data-sr] {
       opacity: 0; transform: translateY(48px);
@@ -49,6 +170,21 @@
       padding: 100px 24px 120px;
       position: relative;
     }
+
+    /* Background paths — fixed sur toute la page, visible au scroll */
+    #bg-paths {
+      position: fixed; inset: 0;
+      pointer-events: none; z-index: 1;
+    }
+    #bg-paths svg {
+      position: absolute; inset: 0;
+      width: 100%; height: 100%;
+    }
+    @keyframes path-flow {
+      from { stroke-dashoffset:  2000; }
+      to   { stroke-dashoffset: -2000; }
+    }
+
     .hero-logo {
       position: absolute; top: 32px; left: 40px;
       display: flex; align-items: center; gap: 12px;
@@ -303,6 +439,59 @@
     .feat-budget-text h3 { font-size:26px; font-weight:800; letter-spacing:-.03em; color:#f5f7ff; margin:0 0 14px; }
     .feat-budget-text p  { font-size:15.5px; color:#8b8fb0; line-height:1.7; margin:0; max-width:420px; }
 
+    /* ── Arc circular stats ───────────────────────────── */
+    .arc-hw {
+      cursor: pointer;
+      will-change: transform;
+      transform-style: preserve-3d;
+      transition: transform 0.12s ease;
+    }
+
+    /* C — comète qui court sur l'arc */
+    @keyframes arc-comet-spin {
+      from { stroke-dashoffset:  565; }
+      to   { stroke-dashoffset: -565; }
+    }
+    .arc-comet {
+      opacity: 0;
+      stroke-dasharray: 60 505;
+      stroke-linecap: round;
+      stroke-dashoffset: 565;
+      transition: opacity 0.35s ease;
+      pointer-events: none;
+    }
+    .arc-hw:hover .arc-comet {
+      opacity: 1;
+      animation: arc-comet-spin 1.6s linear infinite;
+    }
+
+    /* D — glow qui pulse et s'élargit */
+    @keyframes arc-glow-pulse {
+      0%,100% { transform: scale(1.2); opacity: .65; }
+      50%     { transform: scale(1.7); opacity: 1;   }
+    }
+    .arc-hw > div:first-child {
+      transition: transform 0.4s ease, opacity 0.4s ease;
+    }
+    .arc-hw:hover > div:first-child {
+      animation: arc-glow-pulse 1.8s ease-in-out infinite;
+    }
+    .arc-card  { display:flex; flex-direction:column; align-items:center; text-align:center; gap:16px; }
+    .arc-wrap  { position:relative; width:240px; height:240px; }
+    .arc-glow  { position:absolute; inset:-20px; border-radius:50%; filter:blur(40px); pointer-events:none; z-index:0; }
+    .arc-wrap svg { position:relative; z-index:1; }
+    .arc-center {
+      position:absolute; top:50%; left:50%;
+      transform:translate(-50%,-50%);
+      display:flex; flex-direction:column; align-items:center;
+      z-index:2; pointer-events:none;
+    }
+    .arc-prefix  { font-size:22px; font-weight:800; line-height:1; margin-bottom:2px; }
+    .arc-num     { font-size:48px; font-weight:900; letter-spacing:-.04em; line-height:1; }
+    .arc-context { font-size:12px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; margin-top:6px; color:#8b8fb0; }
+    .arc-label   { font-size:16px; font-weight:700; color:#f5f7ff; }
+    .arc-desc    { font-size:13px; color:#8b8fb0; line-height:1.6; max-width:200px; }
+
     /* ── CONTAINER SCROLL — How it works ─────────────── */
     .cs-outer {
       padding: 40px 40px 140px;
@@ -365,43 +554,180 @@
     .stat-unit { font-size:36px; font-weight:800; color:#818cf8; margin-left:4px; }
     .stat-lbl  { display:block; margin-top:12px; font-size:14px; color:#8b8fb0; }
 
-    /* ── CTA FINAL ────────────────────────────────────── */
-    .lp-cta { min-height:85vh; display:flex; align-items:center; justify-content:center; text-align:center; padding:100px 24px; position:relative; }
-    .cta-glow { position:absolute; width:600px; height:600px; border-radius:50%; background:radial-gradient(#6366f1,transparent 70%); filter:blur(100px); opacity:.18; pointer-events:none; top:50%; left:50%; transform:translate(-50%,-50%); }
+    /* ── Cinematic Footer (remplace CTA FINAL) ──────── */
+    @keyframes cf-breathe   { 0%{transform:translate(-50%,-50%) scale(1);opacity:.5} 100%{transform:translate(-50%,-50%) scale(1.12);opacity:.85} }
+    @keyframes cf-marquee   { from{transform:translateX(0)} to{transform:translateX(-50%)} }
+    @keyframes cf-heartbeat { 0%,100%{transform:scale(1)} 15%,45%{transform:scale(1.3)} 30%{transform:scale(1)} }
+
+    .cf-wrapper { position:relative; height:100vh; width:100%; clip-path:polygon(0% 0,100% 0%,100% 100%,0 100%); }
+    .cf-footer  { position:fixed; bottom:0; left:0; width:100%; height:100vh; display:flex; flex-direction:column; justify-content:space-between; overflow:hidden; background:#050510; }
+    .cf-aurora  { position:absolute; width:80vw; height:60vh; left:50%; top:50%; border-radius:50%; background:radial-gradient(circle at 50% 50%,rgba(99,102,241,.18) 0%,rgba(34,211,238,.12) 40%,transparent 70%); filter:blur(80px); animation:cf-breathe 8s ease-in-out infinite alternate; pointer-events:none; z-index:0; }
+    .cf-grid    { position:absolute; inset:0; z-index:0; pointer-events:none; background-size:60px 60px; background-image:linear-gradient(to right,rgba(99,102,241,.06) 1px,transparent 1px),linear-gradient(to bottom,rgba(99,102,241,.06) 1px,transparent 1px); mask-image:linear-gradient(to bottom,transparent,black 30%,black 70%,transparent); -webkit-mask-image:linear-gradient(to bottom,transparent,black 30%,black 70%,transparent); }
+    .cf-giant   { position:absolute; bottom:-4vh; left:50%; transform:translateX(-50%); font-size:24vw; line-height:.75; font-weight:900; letter-spacing:-.05em; white-space:nowrap; pointer-events:none; user-select:none; color:transparent; -webkit-text-stroke:1px rgba(129,140,248,.08); background:linear-gradient(180deg,rgba(129,140,248,.12) 0%,transparent 60%); -webkit-background-clip:text; background-clip:text; z-index:0; }
+
+    .cf-marquee-wrap  { position:absolute; top:52px; left:0; width:100%; overflow:hidden; border-top:1px solid rgba(255,255,255,.06); border-bottom:1px solid rgba(255,255,255,.06); background:rgba(5,5,16,.75); backdrop-filter:blur(12px); padding:12px 0; transform:rotate(-1.2deg) scaleX(1.06); z-index:10; }
+    .cf-marquee-track { display:flex; width:max-content; animation:cf-marquee 38s linear infinite; font-size:11px; font-weight:700; letter-spacing:.2em; text-transform:uppercase; color:#6b6f8e; }
+    .cf-marquee-item  { display:flex; align-items:center; gap:28px; padding:0 24px; white-space:nowrap; }
+    .cf-dot           { color:#6366f1; }
+
+    .cf-main  { position:relative; z-index:10; flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:140px 24px 0; }
+    .cf-title { font-size:clamp(36px,6vw,72px); font-weight:900; letter-spacing:-.04em; line-height:1.05; color:transparent; background:linear-gradient(180deg,#f5f7ff 0%,rgba(245,247,255,.4) 100%); -webkit-background-clip:text; background-clip:text; filter:drop-shadow(0 0 30px rgba(129,140,248,.2)); margin:0 0 20px; }
+    .cf-sub   { font-size:18px; color:#8b8fb0; margin:0 0 44px; line-height:1.6; }
+
+    .cf-pills-row  { display:flex; flex-wrap:wrap; justify-content:center; gap:10px; margin-top:28px; }
+    .cf-glass-pill { display:inline-flex; align-items:center; gap:8px; padding:10px 22px; border-radius:99px; background:rgba(20,22,38,.55); border:1px solid rgba(255,255,255,.08); backdrop-filter:blur(16px); color:#8b8fb0; font-size:12.5px; font-weight:600; text-decoration:none; transition:all .35s cubic-bezier(.16,1,.3,1); cursor:pointer; font-family:inherit; }
+    .cf-glass-pill:hover { background:rgba(99,102,241,.15); border-color:rgba(129,140,248,.3); color:#e0e7ff; transform:translateY(-2px); }
+
+    .cf-bottom     { position:relative; z-index:20; padding:20px 40px 28px; display:flex; align-items:center; justify-content:space-between; gap:16px; border-top:1px solid rgba(255,255,255,.05); }
+    .cf-copyright  { font-size:10.5px; font-weight:700; letter-spacing:.15em; text-transform:uppercase; color:#6b6f8e; }
+    .cf-made-with  { display:flex; align-items:center; gap:8px; padding:8px 20px; border-radius:99px; background:rgba(20,22,38,.55); border:1px solid rgba(255,255,255,.07); backdrop-filter:blur(12px); font-size:10.5px; font-weight:700; letter-spacing:.15em; text-transform:uppercase; color:#6b6f8e; }
+    .cf-heart      { display:inline-block; color:#6366f1; animation:cf-heartbeat 2s cubic-bezier(.25,1,.5,1) infinite; }
+    .cf-backtop    { width:44px; height:44px; border-radius:50%; background:rgba(20,22,38,.55); border:1px solid rgba(255,255,255,.08); backdrop-filter:blur(16px); display:grid; place-items:center; color:#8b8fb0; cursor:pointer; transition:all .3s; }
+    .cf-backtop:hover { background:rgba(99,102,241,.2); border-color:rgba(129,140,248,.3); color:#e0e7ff; transform:translateY(-3px); }
+
+    /* conserver les variables de l'ancien CTA (bouton inchangé) */
+    .lp-cta,.cta-glow { display:none; }
     .cta-inner { max-width:680px; position:relative; z-index:2; }
     .cta-title { font-size:clamp(36px,6vw,72px); font-weight:900; letter-spacing:-.04em; color:#f5f7ff; margin:0 0 20px; line-height:1.05; }
     .cta-sub   { font-size:18px; color:#8b8fb0; margin:0 0 48px; line-height:1.6; }
+    /* Motion button */
     .cta-btn {
-      display:inline-flex; align-items:center; gap:12px;
-      padding:22px 56px; border-radius:99px; font-size:18px; font-weight:800;
-      background:linear-gradient(135deg,#6366f1,#22d3ee); color:#fff; text-decoration:none;
-      box-shadow:inset 0 1px 1px rgba(255,255,255,.3), 0 24px 60px -15px rgba(99,102,241,.6);
-      transition:transform .3s cubic-bezier(.22,1,.36,1), box-shadow .3s;
-      animation:glowPulse 3s ease-in-out infinite; position:relative; overflow:hidden;
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      height: 68px;
+      width: 320px;
+      border-radius: 99px;
+      background: rgba(14, 14, 30, 0.65);
+      border: 1px solid rgba(99,102,241,.35);
+      cursor: pointer;
+      outline: none;
+      overflow: hidden;
+      text-decoration: none;
+      backdrop-filter: blur(20px);
+      box-shadow: 0 0 40px -10px rgba(99,102,241,.3);
+      transition: border-color .4s, box-shadow .4s;
     }
-    .cta-btn::before { content:''; position:absolute; inset:0; background:linear-gradient(135deg,rgba(255,255,255,.15),transparent 60%); pointer-events:none; }
-    .cta-btn:hover   { transform:translateY(-4px) scale(1.03); box-shadow:0 32px 80px -15px rgba(99,102,241,.75); }
-    .cta-btn svg     { transition:transform .3s; }
-    .cta-btn:hover svg { transform:translateX(5px); }
+    .cta-btn:hover {
+      border-color: rgba(129,140,248,.6);
+      box-shadow: 0 0 60px -10px rgba(99,102,241,.5);
+    }
+    .cta-circle {
+      display: block;
+      /* margin au lieu de padding sur le parent → calcul correct */
+      margin: 6px;
+      width: 56px; height: 56px;
+      border-radius: 99px;
+      background: linear-gradient(135deg, #6366f1, #22d3ee);
+      flex-shrink: 0;
+      box-shadow: inset 0 1px 1px rgba(255,255,255,.35), 0 6px 20px -6px rgba(99,102,241,.7);
+      transition: width .55s cubic-bezier(.22,1,.36,1);
+    }
+    /* 100% de la largeur du btn (320px) - 12px de marge = 308px → remplissage parfait */
+    .cta-btn:hover .cta-circle { width: calc(100% - 12px); }
+    .cta-arrow {
+      position: absolute;
+      left: 18px; top: 50%;
+      transform: translateY(-50%);
+      color: #fff;
+      display: flex; align-items: center;
+      z-index: 2;
+      transition: transform .55s cubic-bezier(.22,1,.36,1);
+    }
+    .cta-btn:hover .cta-arrow { transform: translateY(-50%) translateX(6px); }
+    .cta-label {
+      position: absolute;
+      left: 50%; top: 50%;
+      transform: translate(-50%, -50%);
+      white-space: nowrap;
+      font-size: 18px; font-weight: 800;
+      letter-spacing: -0.02em;
+      color: #e8ebf5;
+      z-index: 2;
+      margin-left: 14px;
+      transition: color .4s;
+      font-family: "Geist", system-ui, sans-serif;
+    }
+    .cta-btn:hover .cta-label { color: #fff; }
     .cta-login   { margin-top:20px; font-size:13.5px; color:#6b6f8e; }
     .cta-login a { color:#818cf8; text-decoration:none; }
     .cta-login a:hover { text-decoration:underline; }
 
-    /* ── Responsive ───────────────────────────────────── */
+    /* ── Responsive landing page ──────────────────────── */
     @media (max-width:900px) {
+      /* Hero */
+      .lp-hero { padding:80px 18px 100px; }
+      .hero-title { font-size:clamp(38px,10vw,72px); }
+      .hero-logo  { top:20px; left:20px; }
+      .hero-sub   { font-size:16px; }
+      .hero-actions { flex-direction:column; align-items:center; }
+
+      /* Features */
       .feat-budget { grid-template-columns:1fr; }
-      .feat-budget-3d { min-height:320px; border-left:none; border-top:1px solid rgba(255,255,255,.06); }
-      #coin-canvas { width:260px; height:260px; }
-      .coin-halo { width:200px; height:200px; }
-      .coin-halo-outer { width:280px; height:280px; }
-      .feat-row { grid-template-columns:72px 1fr; }
+      .feat-budget-3d { min-height:300px; border-left:none; border-top:1px solid rgba(255,255,255,.06); }
+      #coin-canvas { width:240px; height:240px; }
+      .coin-halo { width:190px; height:190px; }
+      .coin-halo-outer { width:260px; height:260px; }
+
+      .feat-fridge, .feat-cart { grid-template-columns:1fr; }
+      .feat-fridge-3d, .feat-cart-3d { min-height:280px; border:none; border-top:1px solid rgba(255,255,255,.06); }
+      #fridge-canvas, #cart-canvas { width:240px; height:240px; }
+
+      .feat-coloc { grid-template-columns:1fr; }
+      .feat-coloc-3d { min-height:280px; border:none; border-top:1px solid rgba(255,255,255,.06); }
+      #coloc-canvas { width:240px; height:240px; }
+
+      .feat-row  { grid-template-columns:60px 1fr; }
       .feat-tag  { display:none; }
-      .lp-stats-wrap { grid-template-columns:1fr; gap:10px; }
-      .stat-block:first-child,.stat-block:last-child { border-radius:18px; }
+
+      /* Arc cards → vertical */
+      #arcs-row  { flex-direction:column; align-items:center; gap:40px !important; }
+      #arcs-row > div[style*="margin-top:40px"] { margin-top:0 !important; }
+
+      /* How it works */
+      .cs-outer  { padding:20px 18px 80px; }
+      .cs-card-tilt { padding:28px 20px; }
+      .cs-steps-grid { grid-template-columns:1fr; gap:24px; }
+      .cs-col-div    { display:none; }
+
+      /* Section padding */
+      .lp-section { padding:80px 18px; }
+
+      /* Cinematic footer */
+      .cf-bottom { flex-direction:column; gap:14px; padding:16px 20px 24px; }
+      .cf-made-with { display:none; }
+      .cf-title  { font-size:clamp(28px,8vw,56px); }
+      .cf-giant  { font-size:35vw; }
+      .cf-pills-row { gap:8px; }
+      .cta-btn   { width:90vw; max-width:360px; }
+    }
+
+    @media (max-width:480px) {
+      .hero-title   { font-size:clamp(32px,11vw,56px); }
+      .hero-badge   { font-size:11px; padding:6px 14px; }
+      .section-title { font-size:clamp(26px,7vw,42px); }
+      .feat-row-icon { width:52px; height:52px; font-size:22px; border-radius:14px; }
+      .feat-row     { gap:14px; padding:24px 18px; }
+      .feat-budget-text, .feat-fridge-text, .feat-cart-text, .feat-coloc-text { padding:28px 20px; }
+      #coin-canvas, #fridge-canvas, #cart-canvas, #coloc-canvas { width:200px !important; height:200px !important; }
+      .arc-hw       { transform:none !important; } /* désactive tilt 3D sur mobile */
     }
   </style>
 </head>
 <body>
+
+<!-- ══ Loading screen ══ -->
+<div id="page-loader">
+  <div class="loader">
+    <div class="lc lc0"><div></div></div>
+    <div class="lc lc1"><div></div></div>
+    <div class="lc lc2"><div></div></div>
+    <div class="lc lc3"><div></div></div>
+    <div class="loader-shadow"></div>
+  </div>
+</div>
+
+<div id="bg-paths"></div>
 <div class="orb orb-1"></div>
 <div class="orb orb-2"></div>
 <div class="orb orb-3"></div>
@@ -412,7 +738,8 @@
   <section class="lp-hero">
 
     <div class="hero-logo">
-      <div class="hero-logo-mark">SL</div>
+      <img src="<?= BASE_URL ?>/img/logo-dark.png"  class="logo-img-dark"  alt="StudentLife Hub" style="width:36px;height:36px;border-radius:10px;object-fit:contain;">
+      <img src="<?= BASE_URL ?>/img/logo-light.png" class="logo-img-light" alt="StudentLife Hub" style="width:36px;height:36px;border-radius:10px;object-fit:contain;">
       <span>StudentLife<em style="font-style:normal;background:linear-gradient(120deg,#22d3ee,#818cf8);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;">·</em>Hub</span>
     </div>
 
@@ -564,46 +891,193 @@
 
   <!-- ══════════════ STATS ══════════════ -->
   <div class="lp-sep"></div>
-  <section class="lp-section" style="padding-bottom:0;">
-    <div data-sr style="text-align:center;margin-bottom:52px;">
-      <div class="section-label" style="justify-content:center;">En chiffres</div>
-      <h2 class="section-title" style="text-align:center;">La simplicité, c'est nos chiffres.</h2>
+  <section class="lp-section" style="padding-bottom:80px;">
+    <div data-sr style="text-align:center;margin-bottom:72px;">
+      <div class="section-label" style="justify-content:center;">Impact réel</div>
+      <h2 class="section-title" style="text-align:center;">Des résultats qui parlent d'eux-mêmes.</h2>
     </div>
-    <div class="lp-stats-wrap" data-sr>
-      <div class="stat-block">
-        <span class="stat-num" data-count="3">0</span><span class="stat-unit"> min</span>
-        <span class="stat-lbl">Pour tout configurer</span>
+
+    <!-- Arc circulaires -->
+    <div id="arcs-row" style="display:flex;justify-content:center;align-items:flex-start;gap:56px;flex-wrap:wrap;margin-bottom:80px;opacity:0;transform:translateY(40px);transition:opacity .8s ease,transform .8s ease;">
+
+      <!-- Arc 1 — +5 000 étudiants -->
+      <div style="display:flex;flex-direction:column;align-items:center;gap:18px;text-align:center;">
+        <div class="arc-hw" style="position:relative;width:240px;height:240px;">
+          <div style="position:absolute;inset:-24px;border-radius:50%;background:radial-gradient(circle,rgba(34,211,238,.18),transparent 70%);filter:blur(40px);z-index:0;pointer-events:none;"></div>
+          <svg viewBox="0 0 240 240" width="240" height="240" style="position:relative;z-index:1;display:block;">
+            <defs>
+              <linearGradient id="ag1" x1="0%" y1="100%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#22d3ee"/><stop offset="100%" stop-color="#818cf8"/>
+              </linearGradient>
+              <filter id="af1"><feGaussianBlur in="SourceGraphic" stdDeviation="4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+            </defs>
+            <circle cx="120" cy="120" r="108" fill="none" stroke="rgba(34,211,238,.08)" stroke-width="1.5" stroke-dasharray="5 9"/>
+            <circle cx="120" cy="120" r="90"  fill="none" stroke="rgba(255,255,255,.07)" stroke-width="12"/>
+            <circle id="arc1" cx="120" cy="120" r="90" fill="none" stroke="url(#ag1)" stroke-width="12" stroke-linecap="round"
+              stroke-dasharray="565.49" stroke-dashoffset="565.49" transform="rotate(-90 120 120)" filter="url(#af1)" data-target="124"/>
+            <circle class="arc-comet" cx="120" cy="120" r="90" fill="none"
+              stroke="rgba(200,240,255,0.9)" stroke-width="4" transform="rotate(-90 120 120)"/>
+          </svg>
+          <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:2;display:flex;flex-direction:column;align-items:center;pointer-events:none;">
+            <div style="display:flex;align-items:baseline;gap:2px;">
+              <span style="font-size:20px;font-weight:800;color:#22d3ee;line-height:1;">+</span>
+              <span id="arc1-num" style="display:inline-block;font-size:46px;font-weight:900;letter-spacing:-.04em;line-height:1;background:linear-gradient(120deg,#22d3ee,#818cf8);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;">0</span>
+            </div>
+            <span style="display:inline-block;font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#8b8fb0;margin-top:6px;">étudiants</span>
+          </div>
+        </div>
+        <div style="font-size:16px;font-weight:700;color:#f5f7ff;">Étudiants organisés</div>
+        <div style="font-size:13px;color:#8b8fb0;line-height:1.6;max-width:200px;">qui ont repris le contrôle<br>de leur budget</div>
       </div>
-      <div class="stat-block">
-        <span class="stat-num" data-count="4">0</span><span class="stat-unit"> modules</span>
-        <span class="stat-lbl">Budget · Frigo · Courses · Coloc</span>
+
+      <!-- Arc 2 — -340 € (décalé vers le bas pour le rythme) -->
+      <div style="display:flex;flex-direction:column;align-items:center;gap:18px;text-align:center;margin-top:40px;">
+        <div class="arc-hw" style="position:relative;width:240px;height:240px;">
+          <div style="position:absolute;inset:-24px;border-radius:50%;background:radial-gradient(circle,rgba(52,211,153,.18),transparent 70%);filter:blur(40px);z-index:0;pointer-events:none;"></div>
+          <svg viewBox="0 0 240 240" width="240" height="240" style="position:relative;z-index:1;display:block;">
+            <defs>
+              <linearGradient id="ag2" x1="0%" y1="100%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#34d399"/><stop offset="100%" stop-color="#22d3ee"/>
+              </linearGradient>
+              <filter id="af2"><feGaussianBlur in="SourceGraphic" stdDeviation="4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+            </defs>
+            <circle cx="120" cy="120" r="108" fill="none" stroke="rgba(52,211,153,.08)" stroke-width="1.5" stroke-dasharray="5 9"/>
+            <circle cx="120" cy="120" r="90"  fill="none" stroke="rgba(255,255,255,.07)" stroke-width="12"/>
+            <circle id="arc2" cx="120" cy="120" r="90" fill="none" stroke="url(#ag2)" stroke-width="12" stroke-linecap="round"
+              stroke-dasharray="565.49" stroke-dashoffset="565.49" transform="rotate(-90 120 120)" filter="url(#af2)" data-target="198"/>
+            <circle class="arc-comet" cx="120" cy="120" r="90" fill="none"
+              stroke="rgba(200,255,235,0.9)" stroke-width="4" transform="rotate(-90 120 120)"/>
+          </svg>
+          <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:2;display:flex;flex-direction:column;align-items:center;pointer-events:none;">
+            <div style="display:flex;align-items:baseline;gap:2px;">
+              <span style="font-size:20px;font-weight:800;color:#34d399;line-height:1;">-</span>
+              <span id="arc2-num" style="display:inline-block;font-size:46px;font-weight:900;letter-spacing:-.04em;line-height:1;background:linear-gradient(120deg,#34d399,#22d3ee);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;">0</span>
+              <span style="font-size:20px;font-weight:800;color:#34d399;line-height:1;margin-left:2px;">€</span>
+            </div>
+            <span style="display:inline-block;font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#34d399;margin-top:6px;">par mois</span>
+          </div>
+        </div>
+        <div style="font-size:16px;font-weight:700;color:#f5f7ff;">Dépenses évitées</div>
+        <div style="font-size:13px;color:#8b8fb0;line-height:1.6;max-width:200px;">en moyenne grâce au suivi<br>en temps réel</div>
       </div>
-      <div class="stat-block">
-        <span class="stat-num" data-count="0">0</span><span class="stat-unit"> €</span>
-        <span class="stat-lbl">Coût total, pour toujours</span>
+
+      <!-- Arc 3 — 2 min -->
+      <div style="display:flex;flex-direction:column;align-items:center;gap:18px;text-align:center;">
+        <div class="arc-hw" style="position:relative;width:240px;height:240px;">
+          <div style="position:absolute;inset:-24px;border-radius:50%;background:radial-gradient(circle,rgba(99,102,241,.22),transparent 70%);filter:blur(40px);z-index:0;pointer-events:none;"></div>
+          <svg viewBox="0 0 240 240" width="240" height="240" style="position:relative;z-index:1;display:block;">
+            <defs>
+              <linearGradient id="ag3" x1="0%" y1="100%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#818cf8"/><stop offset="100%" stop-color="#6366f1"/>
+              </linearGradient>
+              <filter id="af3"><feGaussianBlur in="SourceGraphic" stdDeviation="4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+            </defs>
+            <circle cx="120" cy="120" r="108" fill="none" stroke="rgba(99,102,241,.09)" stroke-width="1.5" stroke-dasharray="5 9"/>
+            <circle cx="120" cy="120" r="90"  fill="none" stroke="rgba(255,255,255,.07)" stroke-width="12"/>
+            <circle id="arc3" cx="120" cy="120" r="90" fill="none" stroke="url(#ag3)" stroke-width="12" stroke-linecap="round"
+              stroke-dasharray="565.49" stroke-dashoffset="565.49" transform="rotate(-90 120 120)" filter="url(#af3)" data-target="68"/>
+            <circle class="arc-comet" cx="120" cy="120" r="90" fill="none"
+              stroke="rgba(210,200,255,0.9)" stroke-width="4" transform="rotate(-90 120 120)"/>
+          </svg>
+          <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:2;display:flex;flex-direction:column;align-items:center;pointer-events:none;">
+            <div style="display:flex;align-items:baseline;gap:6px;">
+              <span id="arc3-num" style="display:inline-block;font-size:56px;font-weight:900;letter-spacing:-.04em;line-height:1;background:linear-gradient(120deg,#818cf8,#6366f1);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;">0</span>
+              <span style="font-size:20px;font-weight:800;color:#818cf8;line-height:1;">min</span>
+            </div>
+            <span style="display:inline-block;font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#818cf8;margin-top:6px;">par jour</span>
+          </div>
+        </div>
+        <div style="font-size:16px;font-weight:700;color:#f5f7ff;">Par jour suffisent</div>
+        <div style="font-size:13px;color:#8b8fb0;line-height:1.6;max-width:200px;">pour une vue complète<br>de ta vie étudiante</div>
       </div>
+
     </div>
   </section>
 
-  <!-- ══════════════ CTA FINAL ══════════════ -->
-  <div class="lp-sep" style="height:160px;"></div>
-  <section class="lp-cta">
-    <div class="cta-glow"></div>
-    <div class="cta-inner" data-sr>
-      <h2 class="cta-title">Prêt à reprendre<br>le contrôle ?</h2>
-      <p class="cta-sub">Rejoins StudentLife Hub et arrête de subir ta vie étudiante.<br>C'est gratuit, c'est maintenant.</p>
-      <a href="<?= BASE_URL ?>/auth/register" class="cta-btn">
-        Commencer gratuitement
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-      </a>
-      <p class="cta-login">Déjà un compte ? <a href="<?= BASE_URL ?>/auth/login">Se connecter</a></p>
-    </div>
-  </section>
+  <!-- ══════════════ CINEMATIC FOOTER ══════════════ -->
+  <div class="lp-sep" style="height:80px;"></div>
+
+  <div class="cf-wrapper" id="cf-wrapper">
+    <footer class="cf-footer">
+
+      <!-- Ambient glow -->
+      <div class="cf-aurora"></div>
+      <!-- Grid -->
+      <div class="cf-grid"></div>
+      <!-- Giant background text -->
+      <div class="cf-giant" id="cf-giant">STUDENT</div>
+
+      <!-- Marquee band -->
+      <div class="cf-marquee-wrap">
+        <div class="cf-marquee-track">
+          <?php for($i=0;$i<2;$i++): ?>
+          <div class="cf-marquee-item">
+            Budget maîtrisé <span class="cf-dot">✦</span>
+            Frigo intelligent <span class="cf-dot">✦</span>
+            Courses simplifiées <span class="cf-dot">✦</span>
+            Vie en coloc <span class="cf-dot">✦</span>
+            100% gratuit <span class="cf-dot">✦</span>
+            Objectifs d'épargne <span class="cf-dot">✦</span>
+          </div>
+          <?php endfor; ?>
+        </div>
+      </div>
+
+      <!-- Centre : titre + bouton existant -->
+      <div class="cf-main" id="cf-heading">
+        <h2 class="cf-title">Prêt à reprendre<br>le contrôle ?</h2>
+        <p class="cf-sub">Rejoins StudentLife Hub et arrête de subir ta vie étudiante.<br>C'est gratuit, c'est maintenant.</p>
+
+        <!-- Bouton inchangé -->
+        <a href="<?= BASE_URL ?>/auth/register" class="cta-btn cf-mag">
+          <span class="cta-circle"></span>
+          <span class="cta-arrow">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </span>
+          <span class="cta-label">Commencer dès maintenant</span>
+        </a>
+
+        <p style="margin-top:18px;font-size:13.5px;color:#6b6f8e;">
+          Déjà un compte ? <a href="<?= BASE_URL ?>/auth/login" style="color:#818cf8;text-decoration:none;">Se connecter</a>
+        </p>
+
+        <!-- Liens secondaires (glass pills) -->
+        <div class="cf-pills-row" id="cf-links">
+          <a href="#" class="cf-glass-pill cf-mag">Mentions légales</a>
+          <a href="#" class="cf-glass-pill cf-mag">Confidentialité</a>
+          <a href="mailto:contact@studentlifehub.fr" class="cf-glass-pill cf-mag">Contact</a>
+        </div>
+      </div>
+
+      <!-- Barre du bas -->
+      <div class="cf-bottom">
+        <span class="cf-copyright">© 2026 StudentLife Hub — Tous droits réservés</span>
+
+        <div class="cf-made-with">
+          Fait avec <span class="cf-heart">♥</span> pour les étudiants
+        </div>
+
+        <button class="cf-backtop cf-mag" onclick="window.scrollTo({top:0,behavior:'smooth'})" title="Retour en haut">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 10l7-7 7 7M12 3v18"/></svg>
+        </button>
+      </div>
+
+    </footer>
+  </div>
 
 </div>
 
 <!-- Scroll reveal + Counters -->
 <script>
+// Masque le loader après chargement (min 1.2s pour voir l'animation)
+const loaderEl = document.getElementById('page-loader');
+const loaderStart = Date.now();
+window.addEventListener('load', () => {
+  const elapsed = Date.now() - loaderStart;
+  const delay   = Math.max(0, 1200 - elapsed);
+  setTimeout(() => loaderEl?.classList.add('out'), delay);
+});
+
 const srObs = new IntersectionObserver(entries => {
   entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); srObs.unobserve(e.target); } });
 }, { threshold: 0.12 });
@@ -626,6 +1100,126 @@ document.querySelector('a[href="#features"]')?.addEventListener('click', e => {
   document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' });
 });
 
+// ── Background paths (hero) ────────────────────────────
+(function() {
+  const ns  = 'http://www.w3.org/2000/svg';
+  const box = document.getElementById('bg-paths');
+  if (!box) return;
+
+  [1, -1].forEach(pos => {
+    const svg = document.createElementNS(ns, 'svg');
+    svg.setAttribute('viewBox', '0 0 696 316');
+    svg.setAttribute('fill', 'none');
+    svg.setAttribute('preserveAspectRatio', 'xMidYMid slice');
+
+    for (let i = 0; i < 36; i++) {
+      const x1 = -(380 - i * 5 * pos);
+      const y1 = -(189 + i * 6);
+      const cx2 = -(312 - i * 5 * pos);
+      const cy2 =  216 - i * 6;
+      const ex  =  152 - i * 5 * pos;
+      const ey  =  343 - i * 6;
+      const cx3 =  616 - i * 5 * pos;
+      const cy3 =  470 - i * 6;
+      const ex2 =  684 - i * 5 * pos;
+      const ey2 =  875 - i * 6;
+
+      const d = `M${x1} ${y1}C${x1} ${y1} ${cx2} ${cy2} ${ex} ${ey}C${cx3} ${cy3} ${ex2} ${ey2} ${ex2} ${ey2}`;
+
+      const p = document.createElementNS(ns, 'path');
+      p.setAttribute('d', d);
+      p.setAttribute('fill', 'none');
+      const opacity = (0.08 + i * 0.022).toFixed(3);
+      p.setAttribute('stroke', pos === 1
+        ? `rgba(99,102,241,${opacity})`
+        : `rgba(34,211,238,${opacity})`);
+      p.setAttribute('stroke-width', (0.4 + i * 0.025).toFixed(2));
+
+      const dur   = (18 + Math.random() * 12).toFixed(1);
+      const delay = -(Math.random() * 20).toFixed(1);
+      p.style.strokeDasharray  = '400 1600';
+      p.style.strokeDashoffset = '0';
+      p.style.animation = `path-flow ${dur}s ${delay}s linear infinite`;
+
+      svg.appendChild(p);
+    }
+    box.appendChild(svg);
+  });
+})();
+
+// ── Arc hover — tilt 3D magnétique ──────────────────────
+document.querySelectorAll('.arc-hw').forEach(function(el) {
+  el.addEventListener('mousemove', function(e) {
+    var r   = el.getBoundingClientRect();
+    var x   = (e.clientX - r.left   - r.width  / 2) / (r.width  / 2); // -1 → +1
+    var y   = (e.clientY - r.top    - r.height / 2) / (r.height / 2);
+    el.style.transition = 'transform 0.1s ease';
+    el.style.transform  =
+      'perspective(700px) rotateY(' + (x * 16) + 'deg) rotateX(' + (-y * 16) + 'deg) scale3d(1.06,1.06,1.06)';
+  });
+
+  el.addEventListener('mouseleave', function() {
+    el.style.transition = 'transform 0.7s cubic-bezier(0.34,1.56,0.64,1)';
+    el.style.transform  = '';
+  });
+});
+
+// ── Arc circulaires — animation au scroll ───────────────
+(function() {
+  var arcsRow = document.getElementById('arcs-row');
+  if (!arcsRow) return;
+
+  var arcs = [
+    { path: document.getElementById('arc1'), num: document.getElementById('arc1-num'), target: 124, count: 5000, delay: 0 },
+    { path: document.getElementById('arc2'), num: document.getElementById('arc2-num'), target: 198, count: 340, delay: 200 },
+    { path: document.getElementById('arc3'), num: document.getElementById('arc3-num'), target: 68,  count: 2,   delay: 400 },
+  ];
+
+  function animateCounter(el, target, delay) {
+    setTimeout(function() {
+      var d = 1800, s = performance.now();
+      (function tick(now) {
+        var p = Math.min((now - s) / d, 1), e = 1 - Math.pow(1 - p, 3);
+        var v = Math.round(e * target);
+        el.textContent = target >= 100 ? v.toLocaleString('fr-FR') : v;
+        if (p < 1) requestAnimationFrame(tick);
+      })(performance.now());
+    }, delay);
+  }
+
+  function animateArc(path, target, delay) {
+    setTimeout(function() {
+      // Trick reflow : forcer le navigateur à lire le layout actuel
+      // avant d'appliquer la transition
+      path.style.transition = 'none';
+      path.style.strokeDashoffset = '565.49';
+      void path.getBoundingClientRect(); // force reflow
+      path.style.transition = 'stroke-dashoffset 2s cubic-bezier(0.4,0,0.2,1)';
+      path.style.strokeDashoffset = String(target);
+    }, delay);
+  }
+
+  var triggered = false;
+  var obs = new IntersectionObserver(function(entries) {
+    if (!entries[0].isIntersecting || triggered) return;
+    triggered = true;
+
+    // Révèle la ligne entière
+    arcsRow.style.opacity = '1';
+    arcsRow.style.transform = 'translateY(0)';
+
+    // Lance chaque arc avec son délai
+    arcs.forEach(function(a) {
+      animateArc(a.path, a.target, a.delay);
+      animateCounter(a.num, a.count, a.delay);
+    });
+
+    obs.disconnect();
+  }, { threshold: 0.2 });
+
+  obs.observe(arcsRow);
+})();
+
 // ── Container scroll — tilt 3D ─────────────────────────
 (function() {
   const outer  = document.querySelector('.cs-outer');
@@ -646,6 +1240,44 @@ document.querySelector('a[href="#features"]')?.addEventListener('click', e => {
   window.addEventListener('scroll', updateCS, { passive: true });
   updateCS();
 })();
+</script>
+
+<!-- GSAP pour le cinematic footer -->
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+<script>
+gsap.registerPlugin(ScrollTrigger);
+
+// ── Giant text parallax ──────────────────────────────
+gsap.fromTo('#cf-giant',
+  { y: '10vh', scale: 0.85, opacity: 0 },
+  { y: '0vh', scale: 1, opacity: 1, ease: 'power1.out',
+    scrollTrigger: { trigger: '#cf-wrapper', start: 'top 80%', end: 'bottom bottom', scrub: 1 }
+  }
+);
+
+// ── Heading + links stagger reveal ──────────────────
+gsap.fromTo('#cf-heading',
+  { y: 60, opacity: 0 },
+  { y: 0, opacity: 1, ease: 'power3.out',
+    scrollTrigger: { trigger: '#cf-wrapper', start: 'top 50%', end: 'center bottom', scrub: 1 }
+  }
+);
+
+// ── Magnetic buttons ────────────────────────────────
+document.querySelectorAll('.cf-mag').forEach(el => {
+  el.style.transition = 'transform 0.4s cubic-bezier(.16,1,.3,1)';
+  el.addEventListener('mousemove', e => {
+    const r = el.getBoundingClientRect();
+    const x = (e.clientX - r.left - r.width  / 2) * 0.35;
+    const y = (e.clientY - r.top  - r.height / 2) * 0.35;
+    el.style.transform = `translate(${x}px,${y}px)`;
+  });
+  el.addEventListener('mouseleave', () => {
+    el.style.transition = 'transform 0.8s cubic-bezier(.34,1.56,.64,1)';
+    el.style.transform = '';
+  });
+});
 </script>
 
 <!-- Three.js — pièce 3D dans la card Budget -->

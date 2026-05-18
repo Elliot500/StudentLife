@@ -1,0 +1,16 @@
+# Fichiers système
+.DS_Store
+Thumbs.db
+
+# Configuration sensible (identifiants BDD)
+config/database.php
+
+# Logs PHP
+*.log
+
+# Dépendances éventuelles
+/vendor/
+
+# Fichiers temporaires
+*.tmp
+*.bak

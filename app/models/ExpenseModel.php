@@ -41,6 +41,36 @@ class ExpenseModel extends Model
         }
     }
 
+    public function last6Months(int $userId): array
+    {
+        try {
+            $stmt = $this->db->prepare(
+                "SELECT DATE_FORMAT(date,'%Y-%m') as month, SUM(amount) as total
+                 FROM expenses
+                 WHERE user_id=:uid AND date >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH)
+                 GROUP BY month ORDER BY month ASC"
+            );
+            $stmt->execute([':uid' => $userId]);
+            return $stmt->fetchAll();
+        } catch (PDOException $e) {
+            return [];
+        }
+    }
+
+    public function budgetsForUser(int $userId): array
+    {
+        try {
+            $stmt = $this->db->prepare("SELECT category, monthly_limit FROM budgets WHERE user_id=:uid");
+            $stmt->execute([':uid' => $userId]);
+            $rows = $stmt->fetchAll();
+            $result = [];
+            foreach ($rows as $r) { $result[$r['category']] = (float) $r['monthly_limit']; }
+            return $result;
+        } catch (PDOException $e) {
+            return [];
+        }
+    }
+
     public function monthlyIncome(int $userId, string $month = ''): float
     {
         if (!$month) $month = date('Y-m');
